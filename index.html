@@ -27,7 +27,7 @@
                 custom,
                 getContract,
             } from "https://esm.sh/viem";
-            import { sepolia } from "https://esm.sh/viem/chains";
+            import { liskSepolia } from "https://esm.sh/viem/chains";
 
             // Variables
             let WalletClient;
@@ -38,7 +38,7 @@
             document.getElementById('connect-wallet').addEventListener('click', async () => {
                 // Create wallet client
                 WalletClient = createWalletClient({
-                    chain: sepolia,
+                    chain: liskSepolia,
                     transport: custom(window.ethereum),
                 });
 
