@@ -8,50 +8,113 @@
 </head>
 <body>
     <div class="container">
-        <h1><button onclick="connect">Connect Wallet</button></h1>
-        <script>
-            (async () => {
-            const { connect } = await import('@wagmi/core');
-            const { InjectedConnector } = await import('@wagmi/core/connectors/injected');
-
-            const connector = new InjectedConnector();
-            connect({ connector }).then(({ account }) => {
-                alert(`Connected to wallet: ${account}`);
-            }).catch((error) => {
-                console.error('Connection failed:', error);
-            });
-        })();
-        </script>
+        <h1><button id="connect-wallet">Connect Wallet</button>
+          <p style="font-size: x-small;">push and pull data from</p> 
+          <p style="font-size: 50%;">Lisk Sepolia Testnet</p></h1>
         
-         App for Blockchain Interaction
-<br>
-        <!-- <label for="inputField">Input Text:</label> -->
         <input type="text" id="inputField" placeholder="Enter text here to be pushed to the blockchain">
         <button id="button1">push data</button>
         <button id="button2">pull data</button>
-        <!-- <button id="button3">Button 3</button> -->
         <div id="output" style="border: 2px solid #4CAF50; padding: 15px; margin-top: 20px; background-color: #e8f5e9; border-radius: 5px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
             <p style="color: #888;">pulled data will be displayed here...</p>
         </div>
-    <div style="margin-top: 20px;"></div>
-        
-        <button id="copyButton" style="margin-left: 10px;">Copy Contract Address</button>
-        <script>
-            document.getElementById('copyButton').addEventListener('click', function() {
-                const address = '0x102e9d39B064E7C8907F29C7611685955d800061';
-                navigator.clipboard.writeText(address).then(function() {
-                    alert('Contract address copied to clipboard!');
-                }, function(err) {
-                    console.error('Could not copy text: ', err);
+
+        <!-- Script tag with type module -->
+        <script type="module">
+            // Import necessary modules
+            import {
+                createWalletClient,
+                custom,
+                getContract,
+            } from "https://esm.sh/viem";
+            import { sepolia } from "https://esm.sh/viem/chains";
+
+            // Variables
+            let WalletClient;
+            let address;
+            let DataContractInstance;
+
+            // Connect wallet button event listener
+            document.getElementById('connect-wallet').addEventListener('click', async () => {
+                // Create wallet client
+                WalletClient = createWalletClient({
+                    chain: sepolia,
+                    transport: custom(window.ethereum),
+                });
+
+                // Request addresses
+                const accounts = await WalletClient.requestAddresses();
+
+                // Get first address in array
+                [address] = accounts;
+
+                console.log('Connected to wallet:', address);
+
+                // Accessing the Data contract address.
+                const DataContractAddress = "0xB881f24928128dd69B5878c8292C211695b0B90B";
+                const DataContractAbi = [
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_data",
+				"type": "string"
+			}
+		],
+		"name": "setData",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getData",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+]
+;
+
+                // Get contract instance
+                DataContractInstance = getContract({
+                    address: DataContractAddress,
+                    abi: DataContractAbi,
+                    client: WalletClient,
                 });
             });
-        </script>
-        <br>
-        <a href="https://sepolia-blockscout.lisk.com/address/0xeBc3Db3690c88B99474082eb150e1B6583aE501a"><i>Testnet</i></a>
 
-    </div>
-    </div>
-    
-    <script src="main.js"></script>
-</div
-</html>
+            // Push data button event listener
+            document.getElementById('button1').addEventListener('click', async () => {
+                if (!DataContractInstance) return console.log('Please connect your wallet first');
+
+                const data = document.getElementById("inputField").value;
+                
+ 　 　 　 　 　　// setData 
+ 　 　 　 　 　　await DataContractInstance.write.setData([data], { account: address });
+ 　 　 　 　　console.log("Data has been pushed");
+　 　 　 　 });
+
+　 　 　 　　// Pull data button event listener 
+　 　 　 　　document.getElementById('button2').addEventListener('click', async () => {
+　 　 　 　 　 if (!DataContractInstance) return console.log('Please connect your wallet first');
+
+　 　 　 　 　　const data = await DataContractInstance.read.getData();
+　 　 　 　　   document.getElementById("output").innerText = `Your pulled data is : ${data}`;
+　 　 　 　　});
+　 　 　 </script>
+
+　 　 　 <!-- End of container div -->
+　 　 　 </div>
+
+　 　 　 <!-- End of body -->
+　 　 　 </body>
+
+　 　 　 <!-- End of html -->
+　 　 　 </html> 
